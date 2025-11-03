@@ -10,6 +10,11 @@
   },
   "scripts": {
     "build": "bun i && bun src/mcp-server/build.mts && tsc",
+    "build:sse": "tsc src/mcp-sse-server.ts --outDir dist",
+    "start:sse": "node dist/mcp-sse-server.js",
+    "start:sse-simple": "node mcp-sse-server-simple.js",
+    "dev:sse": "npm run build:sse && npm run start:sse",
+    "dev:sse-simple": "npm run start:sse-simple",
     "check": "npm run lint",
     "lint": "eslint --cache --max-warnings=0 src",
     "prepublishOnly": "npm run build"
@@ -17,8 +22,11 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.0",
     "@stricli/core": "^1.1.2",
+    "@types/cors": "^2.8.19",
     "bun": "^1.2.12",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "eventsource": "^4.0.0",
     "express": "^5.1.0",
     "zod": "^3.25.7"
   },
@@ -26,8 +34,8 @@
     "@anthropic-ai/dxt": "^0.1.0",
     "@eslint/js": "^9.26.0",
     "@types/bun": "^1.2.13",
-    "@types/express": "^5.0.1",
-    "@types/node": "^22.15.20",
+    "@types/express": "^5.0.5",
+    "@types/node": "^22.19.0",
     "eslint": "^9.26.0",
     "globals": "^16.0.0",
     "typescript": "~5.8.3",

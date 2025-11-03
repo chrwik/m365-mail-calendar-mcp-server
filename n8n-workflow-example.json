@@ -1,0 +1,106 @@
+{
+  "name": "Microsoft 365 Email Integration",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/emails",
+        "options": {
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "limit",
+                "value": "5"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Get Latest Emails",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [380, 240],
+      "id": "1"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/emails/send",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"to\": \"user@example.com\",\n  \"subject\": \"Test from n8n\",\n  \"body\": \"This email was sent from n8n workflow!\"\n}",
+        "options": {}
+      },
+      "name": "Send Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [600, 240],
+      "id": "2"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/calendar/events",
+        "options": {
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "limit",
+                "value": "10"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Get Calendar Events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [380, 400],
+      "id": "3"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3000/api/calendar/events",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"subject\": \"Team Meeting\",\n  \"start\": \"2025-11-04T10:00:00Z\",\n  \"end\": \"2025-11-04T11:00:00Z\",\n  \"body\": \"Weekly team sync meeting\",\n  \"location\": \"Conference Room A\"\n}",
+        "options": {}
+      },
+      "name": "Create Calendar Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [600, 400],
+      "id": "4"
+    }
+  ],
+  "connections": {
+    "Get Latest Emails": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Calendar Events": {
+      "main": [
+        [
+          {
+            "node": "Create Calendar Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-03T14:54:00.000Z",
+  "versionId": "1"
+}
