@@ -1,0 +1,96 @@
+{
+  "dxt_version": "0.1",
+  "name": "graph-mail-calendar-mcp",
+  "version": "0.0.1",
+  "description": "",
+  "long_description": "Microsoft Graph (Pruned) - Mail & Calendar: Minimal OpenAPI spec covering core Mail and Calendar endpoints for use with MCP builders like Gram.",
+  "author": {
+    "name": "Speakeasy"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "./bin/mcp-server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/bin/mcp-server.js",
+        "start",
+        "--oauth2",
+        "${user_config.oauth2}"
+      ]
+    }
+  },
+  "display_name": "Graph Mail Calendar Mcp",
+  "tools": [
+    {
+      "name": "list-me-messages",
+      "description": "List messages in the signed-in user's mailbox"
+    },
+    {
+      "name": "get-me-message",
+      "description": "Get a specific message"
+    },
+    {
+      "name": "update-me-message",
+      "description": "Update a specific message"
+    },
+    {
+      "name": "delete-me-message",
+      "description": "Delete a message"
+    },
+    {
+      "name": "list-user-messages",
+      "description": "List messages for a user"
+    },
+    {
+      "name": "send-mail",
+      "description": "Send an email as the signed-in user"
+    },
+    {
+      "name": "list-me-events",
+      "description": "List events from the user's default calendar"
+    },
+    {
+      "name": "create-me-event",
+      "description": "Create an event in the user's default calendar"
+    },
+    {
+      "name": "get-me-event",
+      "description": "Get an event"
+    },
+    {
+      "name": "update-me-event",
+      "description": "Update an event"
+    },
+    {
+      "name": "delete-me-event",
+      "description": "Delete an event"
+    },
+    {
+      "name": "list-user-events",
+      "description": "List events for a user"
+    },
+    {
+      "name": "get-me-calendar-view",
+      "description": "Get a calendar view within a time range\n\nRequires startDateTime and endDateTime query parameters."
+    }
+  ],
+  "prompts": [],
+  "keywords": [
+      "graph",
+      "mail",
+      "calendar",
+      "mcp",
+      "microsoft",
+      "pruned"
+    ],
+  "user_config": {
+      "oauth2": {
+        "type": "string",
+        "title": "oauth2",
+        "description": "The oauth2 to use for the request",
+        "required": true,
+        "sensitive": true
+      }
+    }
+}

@@ -1,0 +1,13 @@
+workflowVersion: 1.0.0
+speakeasyVersion: latest
+sources:
+    Microsoft Graph (Pruned) - Mail & Calendar:
+        inputs:
+            - location: ..\graph-mail-calendar-openapi.json
+        output: .speakeasy/out.openapi.yaml
+        registry:
+            location: registry.speakeasyapi.dev/tacerto/tacerto/microsoft-graph-(pruned)---mail-&-calendar
+targets:
+    graph-mail-calendar-sdk:
+        target: mcp-typescript
+        source: Microsoft Graph (Pruned) - Mail & Calendar

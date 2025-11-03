@@ -1,0 +1,743 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Microsoft Graph (Pruned) - Mail & Calendar",
+    "version": "v1.0-pruned-1",
+    "description": "Minimal OpenAPI spec covering core Mail and Calendar endpoints for use with MCP builders like Gram."
+  },
+  "servers": [
+    {
+      "url": "https://graph.microsoft.com/v1.0"
+    }
+  ],
+  "security": [
+    {
+      "oauth2": [
+        "User.Read",
+        "Mail.Read",
+        "Mail.ReadWrite",
+        "Mail.Send",
+        "Calendars.Read",
+        "Calendars.ReadWrite"
+      ]
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "oauth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize",
+            "tokenUrl": "https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token",
+            "scopes": {
+              "User.Read": "Read user profile",
+              "Mail.Read": "Read user mail",
+              "Mail.ReadWrite": "Read and write user mail",
+              "Mail.Send": "Send mail as a user",
+              "Calendars.Read": "Read user calendars",
+              "Calendars.ReadWrite": "Read and write user calendars"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "EmailAddress": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "address"
+        ]
+      },
+      "Recipient": {
+        "type": "object",
+        "properties": {
+          "emailAddress": {
+            "$ref": "#/components/schemas/EmailAddress"
+          }
+        },
+        "required": [
+          "emailAddress"
+        ]
+      },
+      "ItemBody": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "Text",
+              "HTML"
+            ]
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "body": {
+            "$ref": "#/components/schemas/ItemBody"
+          },
+          "from": {
+            "$ref": "#/components/schemas/Recipient"
+          },
+          "sender": {
+            "$ref": "#/components/schemas/Recipient"
+          },
+          "toRecipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            }
+          },
+          "ccRecipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            }
+          },
+          "bccRecipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Recipient"
+            }
+          },
+          "receivedDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sentDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "conversationId": {
+            "type": "string"
+          }
+        }
+      },
+      "SendMailRequest": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "$ref": "#/components/schemas/Message"
+          },
+          "saveToSentItems": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "DateTimeTimeZone": {
+        "type": "object",
+        "properties": {
+          "dateTime": {
+            "type": "string",
+            "description": "yyyy-mm-ddThh:mm:ss"
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "IANA or Windows TZ name"
+          }
+        },
+        "required": [
+          "dateTime",
+          "timeZone"
+        ]
+      },
+      "Location": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string"
+          }
+        }
+      },
+      "Attendee": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "required",
+              "optional",
+              "resource"
+            ]
+          },
+          "emailAddress": {
+            "$ref": "#/components/schemas/EmailAddress"
+          }
+        },
+        "required": [
+          "emailAddress"
+        ]
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "body": {
+            "$ref": "#/components/schemas/ItemBody"
+          },
+          "start": {
+            "$ref": "#/components/schemas/DateTimeTimeZone"
+          },
+          "end": {
+            "$ref": "#/components/schemas/DateTimeTimeZone"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Attendee"
+            }
+          },
+          "organizer": {
+            "$ref": "#/components/schemas/Recipient"
+          },
+          "isAllDay": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PagedMessages": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            }
+          },
+          "@odata.nextLink": {
+            "type": "string"
+          }
+        }
+      },
+      "PagedEvents": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            }
+          },
+          "@odata.nextLink": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "UserId": {
+        "name": "user-id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "User id or UPN"
+      },
+      "MessageId": {
+        "name": "message-id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "EventId": {
+        "name": "event-id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "paths": {
+    "/me/messages": {
+      "get": {
+        "operationId": "listMeMessages",
+        "summary": "List messages in the signed-in user's mailbox",
+        "security": [
+          {
+            "oauth2": [
+              "Mail.Read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "$top",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "maximum": 999
+            }
+          },
+          {
+            "name": "$filter",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$orderby",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedMessages"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/messages/{message-id}": {
+      "get": {
+        "operationId": "getMeMessage",
+        "summary": "Get a specific message",
+        "security": [
+          {
+            "oauth2": [
+              "Mail.Read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MessageId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateMeMessage",
+        "summary": "Update a specific message",
+        "security": [
+          {
+            "oauth2": [
+              "Mail.ReadWrite"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MessageId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Message"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteMeMessage",
+        "summary": "Delete a message",
+        "security": [
+          {
+            "oauth2": [
+              "Mail.ReadWrite"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MessageId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/users/{user-id}/messages": {
+      "get": {
+        "operationId": "listUserMessages",
+        "summary": "List messages for a user",
+        "security": [
+          {
+            "oauth2": [
+              "Mail.Read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedMessages"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/sendMail": {
+      "post": {
+        "operationId": "sendMail",
+        "summary": "Send an email as the signed-in user",
+        "security": [
+          {
+            "oauth2": [
+              "Mail.Send"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMailRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          }
+        }
+      }
+    },
+    "/me/events": {
+      "get": {
+        "operationId": "listMeEvents",
+        "summary": "List events from the user's default calendar",
+        "security": [
+          {
+            "oauth2": [
+              "Calendars.Read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "$top",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "$filter",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedEvents"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createMeEvent",
+        "summary": "Create an event in the user's default calendar",
+        "security": [
+          {
+            "oauth2": [
+              "Calendars.ReadWrite"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Event"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Event"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/events/{event-id}": {
+      "get": {
+        "operationId": "getMeEvent",
+        "summary": "Get an event",
+        "security": [
+          {
+            "oauth2": [
+              "Calendars.Read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EventId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Event"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateMeEvent",
+        "summary": "Update an event",
+        "security": [
+          {
+            "oauth2": [
+              "Calendars.ReadWrite"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EventId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Event"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Event"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteMeEvent",
+        "summary": "Delete an event",
+        "security": [
+          {
+            "oauth2": [
+              "Calendars.ReadWrite"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/EventId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/users/{user-id}/events": {
+      "get": {
+        "operationId": "listUserEvents",
+        "summary": "List events for a user",
+        "security": [
+          {
+            "oauth2": [
+              "Calendars.Read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedEvents"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/calendarView": {
+      "get": {
+        "operationId": "getMeCalendarView",
+        "summary": "Get a calendar view within a time range",
+        "description": "Requires startDateTime and endDateTime query parameters.",
+        "security": [
+          {
+            "oauth2": [
+              "Calendars.Read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "startDateTime",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endDateTime",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "$select",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedEvents"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
