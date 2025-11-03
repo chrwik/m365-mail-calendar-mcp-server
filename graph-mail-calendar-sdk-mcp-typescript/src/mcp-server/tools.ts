@@ -14,6 +14,7 @@ import { GraphMailCalendarSDKCore } from "../core.js";
 import { ConsoleLogger } from "./console-logger.js";
 import { MCPScope } from "./scopes.js";
 import { isAsyncIterable, isBinaryData, valueToBase64 } from "./shared.js";
+import { withInteractiveAuth } from "./auth/tool-wrapper.js";
 
 export type ToolDefinition<Args extends undefined | ZodRawShape = undefined> =
   Args extends ZodRawShape ? {
@@ -111,7 +112,7 @@ async function consumeSSE(
 export function createRegisterTool(
   logger: ConsoleLogger,
   server: McpServer,
-  getSDK: () => GraphMailCalendarSDKCore,
+  _getSDK: () => GraphMailCalendarSDKCore, // Replaced by interactive auth system
   allowedScopes: Set<MCPScope>,
   allowedTools?: Set<string>,
 ): <A extends ZodRawShape | undefined>(tool: ToolDefinition<A>) => void {
@@ -138,18 +139,24 @@ export function createRegisterTool(
         tool.description,
         tool.args,
         tool.annotations,
-        async (args, ctx) => {
-          return tool.tool(getSDK(), args, ctx);
-        },
+        withInteractiveAuth(
+          tool.name,
+          async (client, args, ctx) => {
+            return tool.tool(client, args, ctx);
+          }
+        ),
       );
     } else {
       server.tool(
         tool.name,
         tool.description,
         tool.annotations,
-        async (_, ctx) => {
-          return tool.tool(getSDK(), ctx);
-        },
+        withInteractiveAuth(
+          tool.name,
+          async (client, _, ctx) => {
+            return tool.tool(client, ctx);
+          }
+        ),
       );
     }
 

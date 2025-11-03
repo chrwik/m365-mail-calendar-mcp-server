@@ -17,9 +17,10 @@ if "%1"=="auth" (
     echo Usage:
     echo   run-mcp-server.bat auth --client-id YOUR_CLIENT_ID    ^(First time setup^)
     echo   run-mcp-server.bat start                              ^(Start the server^)
-    echo   run-mcp-server.bat auth --status --client-id ID       ^(Check auth status^)
-    echo   run-mcp-server.bat auth --logout --client-id ID       ^(Logout^)
+    echo   run-mcp-server.bat auth --status                      ^(Check auth status^)
+    echo   run-mcp-server.bat auth --logout                      ^(Logout^)
     echo.
+    echo TIP: Create .env file with OAUTH2_CLIENT_ID=your-client-id for easier usage
     echo For detailed help: run-mcp-server.bat COMMAND --help
     echo.
     node bin/mcp-server.js %*

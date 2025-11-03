@@ -44,6 +44,8 @@ export class DeviceFlowAuth {
     tokenStorePath?: string;
   }) {
     this.clientId = options.clientId;
+    // Use specific tenant ID if provided, otherwise fallback to common
+    // For multi-tenant apps, sometimes 'common' works better than 'organizations'
     this.tenantId = options.tenantId || "common";
     this.scopes = options.scopes || [
       "User.Read",
@@ -116,6 +118,7 @@ export class DeviceFlowAuth {
         const result = await response.json();
 
         if (response.ok) {
+          console.error(`Token received successfully for device code: ${deviceCode.substring(0, 4)}...`);
           return result as TokenResponse;
         }
 
@@ -172,23 +175,39 @@ export class DeviceFlowAuth {
    * Store tokens securely on disk
    */
   async storeTokens(tokens: TokenResponse): Promise<void> {
-    const storedTokens: StoredTokens = {
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expires_at: Date.now() + (tokens.expires_in * 1000),
-      scope: tokens.scope,
-    };
+    try {
+      console.error(`Storing tokens to: ${this.tokenFilePath}`);
+      
+      const storedTokens: StoredTokens = {
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_at: Date.now() + (tokens.expires_in * 1000),
+        scope: tokens.scope,
+      };
 
-    const data = JSON.stringify(storedTokens);
-    const key = crypto.scryptSync(this.clientId, "salt", 32);
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
-    
-    let encrypted = cipher.update(data, "utf8", "hex");
-    encrypted += cipher.final("hex");
-    
-    const encryptedData = iv.toString("hex") + ":" + encrypted;
-    fs.writeFileSync(this.tokenFilePath, encryptedData, { mode: 0o600 });
+      const data = JSON.stringify(storedTokens);
+      const key = crypto.scryptSync(this.clientId, "salt", 32);
+      const iv = crypto.randomBytes(16);
+      const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+      
+      let encrypted = cipher.update(data, "utf8", "hex");
+      encrypted += cipher.final("hex");
+      
+      const encryptedData = iv.toString("hex") + ":" + encrypted;
+      
+      // Ensure directory exists
+      const dir = path.dirname(this.tokenFilePath);
+      if (!fs.existsSync(dir)) {
+        console.error(`Creating token directory: ${dir}`);
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      
+      fs.writeFileSync(this.tokenFilePath, encryptedData, { mode: 0o600 });
+      console.error(`Tokens stored successfully to: ${this.tokenFilePath}`);
+    } catch (error) {
+      console.error(`Failed to store tokens: ${error}`);
+      throw error;
+    }
   }
 
   /**
@@ -196,7 +215,9 @@ export class DeviceFlowAuth {
    */
   loadTokens(): StoredTokens | null {
     try {
+      console.error(`Checking if token file exists: ${this.tokenFilePath}`);
       if (!fs.existsSync(this.tokenFilePath)) {
+        console.error(`Token file does not exist: ${this.tokenFilePath}`);
         return null;
       }
 
@@ -225,9 +246,11 @@ export class DeviceFlowAuth {
    * Get a valid access token, refreshing if necessary
    */
   async getValidAccessToken(): Promise<string | null> {
+    console.error(`Checking for valid access token at: ${this.tokenFilePath}`);
     const storedTokens = this.loadTokens();
     
     if (!storedTokens) {
+      console.error(`No stored tokens found`);
       return null;
     }
 
@@ -284,7 +307,9 @@ export class DeviceFlowAuth {
       deviceCode.expires_in
     );
     
+    console.error(`About to store tokens...`);
     await this.storeTokens(tokens);
+    console.error(`Tokens stored successfully!`);
     
     console.log("\n✅ Authentication successful! Tokens stored securely.");
     return tokens.access_token;

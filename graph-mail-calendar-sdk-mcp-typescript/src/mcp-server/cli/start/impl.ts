@@ -53,30 +53,26 @@ async function startStdio(flags: StartCommandFlags) {
     oauth2Token = storedToken || undefined;
     
     if (!oauth2Token) {
-      logger.error(`
-❌ No valid authentication found.
-
-To authenticate with Microsoft Graph:
-1. Set OAUTH2_CLIENT_ID environment variable with your Azure app ID
-2. Run: mcp auth --client-id YOUR_CLIENT_ID
-3. Or provide token directly: --oauth2 YOUR_TOKEN
-
-Get a client ID from: https://portal.azure.com → App registrations
-      `.trim());
-      process.exit(1);
+      logger.info("🔐 No authentication found - will use interactive authentication when tools are called");
     } else {
       logger.info("✅ Using stored authentication tokens");
     }
   }
   
   const transport = new StdioServerTransport();
-  const server = createMCPServer({
+  const serverConfig: any = {
     logger,
     allowedTools: flags.tool,
-    security: { oauth2: oauth2Token },
     serverURL: flags["server-url"],
     serverIdx: flags["server-index"],
-  });
+  };
+  
+  // Only add security if we have a token
+  if (oauth2Token) {
+    serverConfig.security = { oauth2: oauth2Token };
+  }
+  
+  const server = createMCPServer(serverConfig);
   await server.connect(transport);
 
   const abort = async () => {
